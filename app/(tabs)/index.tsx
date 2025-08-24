@@ -1,7 +1,19 @@
 import "../globals.css";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
- 
+import TimeCardEntry from "@/components/TimeCardEntry";
+
+// Fake data for one week
+const timeCards = [
+  { date: "Mon, Aug 19", hoursWorked: "8 hrs", isFuture: false },
+  { date: "Tue, Aug 20", hoursWorked: "7.5 hrs", isFuture: false },
+  { date: "Wed, Aug 21", hoursWorked: "0 hrs", isFuture: false },
+  { date: "Thu, Aug 22", hoursWorked: "8 hrs", isFuture: false },
+  { date: "Fri, Aug 23", hoursWorked: "0 hrs", isFuture: false },
+  { date: "Sat, Aug 24", hoursWorked: "0 hrs", isFuture: true },
+  { date: "Sun, Aug 25", hoursWorked: "0 hrs", isFuture: true },
+];
+
 export default function Index() {
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -15,6 +27,18 @@ export default function Index() {
       <Text className="text-2xl font-bold text-center mb-10">
         Status: <Text className="text-red-500">Punched Out</Text>
       </Text>
+
+      {/* Time Cards */}
+      <ScrollView className="flex-1">
+        {timeCards.map((card, idx) => (
+          <TimeCardEntry
+            key={idx}
+            date={card.date}
+            hoursWorked={card.hoursWorked}
+            isFuture={card.isFuture}
+          />
+        ))}
+      </ScrollView>
 
       {/* Button */}
       <View className="items-center">
