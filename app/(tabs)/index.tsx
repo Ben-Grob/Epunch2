@@ -5,14 +5,17 @@ import TimeCardEntry from "@/components/TimeCardEntry";
 
 // Fake data for one week
 const timeCards = [
-  { date: "Mon, Aug 19", hoursWorked: "8 hrs", isFuture: false },
-  { date: "Tue, Aug 20", hoursWorked: "7.5 hrs", isFuture: false },
-  { date: "Wed, Aug 21", hoursWorked: "0 hrs", isFuture: false },
-  { date: "Thu, Aug 22", hoursWorked: "8 hrs", isFuture: false },
-  { date: "Fri, Aug 23", hoursWorked: "0 hrs", isFuture: false },
-  { date: "Sat, Aug 24", hoursWorked: "0 hrs", isFuture: true },
-  { date: "Sun, Aug 25", hoursWorked: "0 hrs", isFuture: true },
+  { date: "Mon, Aug 19", hoursWorked: 8, isFuture: false },
+  { date: "Tue, Aug 20", hoursWorked: 7.5, isFuture: false },
+  { date: "Wed, Aug 21", hoursWorked: 0, isFuture: false },
+  { date: "Thu, Aug 22", hoursWorked: 8, isFuture: false },
+  { date: "Fri, Aug 23", hoursWorked: 0, isFuture: false },
+  { date: "Sat, Aug 24", hoursWorked: 0, isFuture: true },
+  { date: "Sun, Aug 25", hoursWorked: 0, isFuture: true },
 ];
+
+const totalHours = timeCards
+.reduce((sum, card) => sum + card.hoursWorked, 0);
 
 export default function Index() {
   return (
@@ -24,7 +27,7 @@ export default function Index() {
         </Text>
       </View>
 
-      <Text className="text-2xl font-bold text-center mb-10">
+      <Text className="text-2xl font-bold text-center mb-5">
         Status: <Text className="text-red-500">Punched Out</Text>
       </Text>
 
@@ -39,6 +42,12 @@ export default function Index() {
           />
         ))}
       </ScrollView>
+      <View className="flex-row justify-between bg-gray-200 p-2">
+        <Text className="font-bold text-left">Total</Text>
+        <Text className="font-bold text-right">{totalHours}</Text>
+      </View>
+
+
 
       {/* Button */}
       <View className="items-center">
