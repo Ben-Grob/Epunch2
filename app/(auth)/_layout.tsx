@@ -6,7 +6,7 @@ import useAuthStore from '@/store/auth.store'
 
 // Auth layout configuration
 export default function authlayout() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();  // Fetch is authenticated from the AuthStore (Where the current auth state is stored)
 
   if(isAuthenticated) return <Redirect href="/" /> // Redirect to the tabs group
   return (
