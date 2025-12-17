@@ -17,7 +17,7 @@ const SignIn = () => {
     setIsSubmitting(true)
 
     try {
-        await signIn({ email, password });
+        await signIn({ email, password });  // calling the appwrite function
 
         router.replace('/');
     } catch(error: any) {
