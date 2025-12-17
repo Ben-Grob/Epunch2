@@ -29,14 +29,14 @@ const SignIn = () => {
 
 return (
   <View className="gap-10 bg-white rounded-lg p-5 mt-5">
-      <CustomInput
+      <CustomInput  // email box
           placeholder="Enter your email"
           value={form.email}
           onChangeText={(text) => setForm((prev) => ({ ...prev, email: text }))}
           label="Email"
           keyboardType="email-address"
       />
-      <CustomInput
+      <CustomInput  // Password box
           placeholder="Enter your password"
           value={form.password}
           onChangeText={(text) => setForm((prev) => ({ ...prev, password: text }))}
@@ -49,8 +49,8 @@ return (
           isLoading={isSubmitting}
           onPress={submit}
       />
-
-      <View className="flex justify-center mt-5 flex-row gap-2">
+    
+      <View className="flex justify-center mt-5 flex-row gap-2">  // View for swittching pages
           <Text className="base-regular text-gray-100">
               Don't have an account?
           </Text>
