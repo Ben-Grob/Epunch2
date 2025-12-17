@@ -44,7 +44,7 @@ return (
           secureTextEntry={true}
       />
 
-      <CustomButton
+      <CustomButton  // sign in button
           title="Sign In"
           isLoading={isSubmitting}
           onPress={submit}
