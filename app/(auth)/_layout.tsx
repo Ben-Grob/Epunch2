@@ -8,7 +8,7 @@ import useAuthStore from '@/store/auth.store'
 export default function authlayout() {
   const { isAuthenticated } = useAuthStore();
 
-  if(isAuthenticated) return <Redirect href="/" />
+  if(isAuthenticated) return <Redirect href="/" /> // Redirect to the tabs group
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView className="bg-white h-full" keyboardShouldPersistTaps="handled">
