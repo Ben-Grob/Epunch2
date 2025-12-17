@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Slot, Redirect } from 'expo-router'
 import useAuthStore from '@/store/auth.store'
 
-
+// Auth layout configuration
 export default function authlayout() {
   const { isAuthenticated } = useAuthStore();
 
