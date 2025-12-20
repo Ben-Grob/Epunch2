@@ -8,7 +8,10 @@ import useAuthStore from '@/store/auth.store'
 export default function authlayout() {
   const { isAuthenticated } = useAuthStore();  // Fetch is authenticated from the AuthStore (Where the current auth state is stored)
 
-  if(isAuthenticated) return <Redirect href="/" /> // Redirect to the tabs group
+  if(isAuthenticated) {
+    console.log("Root layout caught aythentication and is redirecting");
+    return <Redirect href="/" /> // Redirect to the tabs group
+  }
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView className="bg-white h-full" keyboardShouldPersistTaps="handled">

@@ -24,6 +24,7 @@ const useAuthStore = create<AuthState>((set) => ({
     setLoading: (value) => set({isLoading: value}),
 
     fetchAuthenticatedUser: async () => {
+        console.log("FETCHING INFO FROM APPWRITE    ")
         set({isLoading: true});
 
         try {
@@ -31,8 +32,12 @@ const useAuthStore = create<AuthState>((set) => ({
 
             if (user && 'email' in user) {
                 set({ isAuthenticated: true, user: user as unknown as User });
+                console.log("User is authenticated");
             }
-            else set( { isAuthenticated: false, user: null } );
+            else {
+                set( { isAuthenticated: false, user: null } );
+                console.log("User is not authenticated");
+            }
         } catch (e) {
             console.log('fetchAuthenticatedUser error', e);
             set({ isAuthenticated: false, user: null })
