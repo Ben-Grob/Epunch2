@@ -1,28 +1,35 @@
 # Epunch
-Epunch is a modern, cross-platform time tracking application built for small to medium-sized businesses. It streamlines the "punch-in/out" process for employees while providing robust oversight and company management tools for administrators.
+Epunch is a simple, cross-platform time tracking application built for small to medium-sized businesses. It streamlines the "punch-in/out" process for employees while providing oversight for managers.
 
-## 🚀 Key Features
-For Employees
-- Seamless Onboarding: Join an existing company instantly using a unique Company ID.
+## Key Features
+For Employees:
+- Onboarding: Join an existing company with a compnayID.
 - One-Tap Punching: Simple interface to clock in and out of shifts.
-- Privacy-First: Secure profile management and clear visibility of personal work history.
+- Punch Card Overview: Ability to view prevoius shifts and see how many hours they have worked
 
-For Managers
+For Managers:
 - Company Creation: Register a new company and automatically become the primary administrator.
 - Staff Oversight: View all employee shifts and time logs within your specific company.
-- Data Integrity: Built-in "Soft Delete" logic ensures that payroll history is preserved even if records are modified.
 
-## 🛠 Tech Stack
+## Tech Stack
 Frontend: React Native with ExpoRouting: 
    Expo Router (File-based routing)
+   
 Backend: Appwrite (Authentication, Database, and Permissions)
 Styling: NativeWind (Tailwind CSS for React Native)
-Icons: Ionicons📊 Database ArchitectureThe app utilizes a relational structure within Appwrite's Document model. 
+Icons: Ionicons 
+Database Architecture: The app utilizes a relational structure within Appwrite's Document model. 
 
-The core of the application revolves around the relationship between Companies, Users, and Shifts.CollectionRelationshipDescriptionCompaniesOne-to-ManyStores company name and unique IDs.UsersMany-to-OneBelongs to a Company; contains isManager role flag.ShiftsMany-to-OneBelongs to a User; stores clock-in/out timestamps.Note on Data Integrity: Shifts use a "Soft Delete" pattern (isDeleted flag) rather than hard deletion to maintain an audit trail for payroll compliance.
+The core of the application revolves around the relationship between Companies, Users, and Shifts.
+| Collection | Description                                                     |
+| -------- | -------                                                           |
+| Company  | Stores company name and id, links to user                         |
+| Shift    | Stores shift info and links to a user                             |
+| User     | Stores user info and links to a company and has isManager flag    |
 
 
-## ⚙️ Installation & Setup
+
+## Installation & Setup
 Clone the repository:Bashgit clone https://github.com/yourusername/epunch.git
 
 cd epunch
@@ -37,5 +44,5 @@ EXPO_PUBLIC_APPWRITE_COMPANIES_COLLECTION_ID=your_collection_id
 EXPO_PUBLIC_APPWRITE_SHIFTS_COLLECTION_ID=your_collection_id
 Start the development server:Bashnpx expo start
 
-## 🔐 Permissions & Logic
-Epunch implements a strict permission model to ensure data security:Managers: Granted create, update, and read access to their company's collective shift data.Employees: Granted create and read access to their own documents only.Onboarding Flow: New Managers trigger a sequential logic that creates a Company document first, followed by a User profile linked via the resulting companyId.
+## Permissions & Logic
+Permissions are role dependant and defined in appwrite. CLASSIFIED!! (JK, I don't feel like updating the md anymore. Coming soon!)
