@@ -1,6 +1,6 @@
+import { getCurrentUser, signOut } from "@/lib/appwrite";
+import { User } from "@/type";
 import { create } from 'zustand';
-import {User} from "@/type";
-import {getCurrentUser} from "@/lib/appwrite";
 
 type AuthState = {
     isAuthenticated: boolean;
@@ -12,6 +12,7 @@ type AuthState = {
     setLoading: (loading: boolean) => void;
 
     fetchAuthenticatedUser: () => Promise<void>;
+    signOut: () => Promise<void>;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
@@ -43,6 +44,18 @@ const useAuthStore = create<AuthState>((set) => ({
             set({ isAuthenticated: false, user: null })
         } finally {
             set({ isLoading: false });
+        }
+    },
+
+    signOut: async () => {
+        try {
+            await signOut();
+            set({ isAuthenticated: false, user: null });
+            console.log("User signed out successfully");
+        } catch (e) {
+            console.error('Sign out error:', e);
+            // Still clear the auth state even if signOut fails
+            set({ isAuthenticated: false, user: null });
         }
     }
 }))

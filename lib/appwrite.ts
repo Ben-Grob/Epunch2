@@ -168,3 +168,20 @@ export const getCurrentUser = async () => {
         return null; 
     }
 }
+
+export const signOut = async () => {
+    try {
+        console.log("Signing out...");
+        await account.deleteSession('current'); // Delete current session
+        console.log("Sign out successful");
+    } catch (e: any) {
+        console.error("Sign out error:", e?.message || e);
+        // Even if there's an error, try to delete all sessions
+        try {
+            await deleteAllSessions();
+        } catch (deleteError) {
+            console.error("Error deleting all sessions:", deleteError);
+        }
+        // Don't throw - allow logout to proceed even if there's an error
+    }
+}
