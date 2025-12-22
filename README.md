@@ -1,4 +1,4 @@
-#Epunch
+# Epunch
 Epunch is a modern, cross-platform time tracking application built for small to medium-sized businesses. It streamlines the "punch-in/out" process for employees while providing robust oversight and company management tools for administrators.
 
 ## 🚀 Key Features
