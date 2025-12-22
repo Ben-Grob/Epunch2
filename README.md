@@ -21,11 +21,11 @@ Icons: Ionicons
 Database Architecture: The app utilizes a relational structure within Appwrite's Document model. 
 
 The core of the application revolves around the relationship between Companies, Users, and Shifts.
-| Collection | Description                                                     |
-| -------- | -------                                                           |
-| Company  | Stores company name and id, links to user                         |
-| Shift    | Stores shift info and links to a user                             |
-| User     | Stores user info and links to a company and has isManager flag    |
+| Collection | Description |
+| :--- | :--- |
+| Company | Stores company name and id, links to user |
+| Shift | Stores shift info and links to a user |
+| User | Stores user info and links to a company and has isManager flag |
 
 
 
