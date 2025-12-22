@@ -1,50 +1,41 @@
-# Welcome to your Expo app 👋
+#Epunch
+Epunch is a modern, cross-platform time tracking application built for small to medium-sized businesses. It streamlines the "punch-in/out" process for employees while providing robust oversight and company management tools for administrators.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 🚀 Key Features
+For Employees
+- Seamless Onboarding: Join an existing company instantly using a unique Company ID.
+- One-Tap Punching: Simple interface to clock in and out of shifts.
+- Privacy-First: Secure profile management and clear visibility of personal work history.
 
-## Get started
+For Managers
+- Company Creation: Register a new company and automatically become the primary administrator.
+- Staff Oversight: View all employee shifts and time logs within your specific company.
+- Data Integrity: Built-in "Soft Delete" logic ensures that payroll history is preserved even if records are modified.
 
-1. Install dependencies
+## 🛠 Tech Stack
+Frontend: React Native with ExpoRouting: 
+   Expo Router (File-based routing)
+Backend: Appwrite (Authentication, Database, and Permissions)
+Styling: NativeWind (Tailwind CSS for React Native)
+Icons: Ionicons📊 Database ArchitectureThe app utilizes a relational structure within Appwrite's Document model. 
 
-   ```bash
-   npm install
-   ```
+The core of the application revolves around the relationship between Companies, Users, and Shifts.CollectionRelationshipDescriptionCompaniesOne-to-ManyStores company name and unique IDs.UsersMany-to-OneBelongs to a Company; contains isManager role flag.ShiftsMany-to-OneBelongs to a User; stores clock-in/out timestamps.Note on Data Integrity: Shifts use a "Soft Delete" pattern (isDeleted flag) rather than hard deletion to maintain an audit trail for payroll compliance.
 
-2. Start the app
 
-   ```bash
-   npx expo start
-   ```
+## ⚙️ Installation & Setup
+Clone the repository:Bashgit clone https://github.com/yourusername/epunch.git
 
-In the output, you'll find options to open the app in a
+cd epunch
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Install dependencies:
+Bashnpm install
+Configure Appwrite:Create a .env file in the root directory and add your Appwrite credentials:Code snippetEXPO_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+EXPO_PUBLIC_APPWRITE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_APPWRITE_DATABASE_ID=your_database_id
+EXPO_PUBLIC_APPWRITE_USERS_COLLECTION_ID=your_collection_id
+EXPO_PUBLIC_APPWRITE_COMPANIES_COLLECTION_ID=your_collection_id
+EXPO_PUBLIC_APPWRITE_SHIFTS_COLLECTION_ID=your_collection_id
+Start the development server:Bashnpx expo start
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🔐 Permissions & Logic
+Epunch implements a strict permission model to ensure data security:Managers: Granted create, update, and read access to their company's collective shift data.Employees: Granted create and read access to their own documents only.Onboarding Flow: New Managers trigger a sequential logic that creates a Company document first, followed by a User profile linked via the resulting companyId.
