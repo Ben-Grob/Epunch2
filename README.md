@@ -1,6 +1,9 @@
 # Epunch
 Epunch is a simple, cross-platform time tracking application built for small to medium-sized businesses. It streamlines the "punch-in/out" process for employees while providing oversight for managers.
 
+### Abstract/motivation
+I'm Ben Grob, a college student looking to break into the tech space. This past summer my boss approached me with the idea of creating a cheaper alternative to our payroll/punch card tracking app. Thus, I've gotten started on Epunch. My goal with this app is to learn more about mobile app development, database focused designs, and enhancing my programming skills. As an involved college student who loves his other hobbies, contributions to this project may be inconsistent depending on the time of year.
+
 ## Key Features
 For Employees:
 - Onboarding: Join an existing company with a compnayID.
