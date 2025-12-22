@@ -25,6 +25,31 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 const avatars = new Avatars(client);
 
+// Create a new company
+export const createCompany = async (companyName: string, managerId: string) => {
+    try {
+        console.log('Creating company:', companyName);
+        
+        const companyDocument = await databases.createDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.companyCollectionId,
+            ID.unique(),
+            { 
+                name: companyName,
+                managerId: managerId
+            }
+        );
+
+        console.log('Company created successfully:', companyDocument.$id);
+        return companyDocument;
+    } catch (e: any) {
+        console.error('Failed to create company:', e);
+        console.error('Error code:', e?.code);
+        console.error('Error type:', e?.type);
+        throw new Error(`Failed to create company: ${e?.message || e}. Make sure the collection has create permissions for authenticated users.`);
+    }
+}
+
 // Helper function to delete all active sessions
 const deleteAllSessions = async () => {
     try {
@@ -36,8 +61,16 @@ const deleteAllSessions = async () => {
     }
 };
 
-export const createUser = async ({ email, password, name }: CreateUserParams) => {
+export const createUser = async ({ email, password, name, isManager, companyId, companyName }: CreateUserParams) => {
     try {
+        // Validate company information based on role
+        if (isManager && !companyName) {
+            throw new Error('Company name is required for managers');
+        }
+        if (!isManager && !companyId) {
+            throw new Error('Company ID is required for employees');
+        }
+
         // Delete any existing sessions before creating a new account
         await deleteAllSessions();
 
@@ -61,10 +94,32 @@ export const createUser = async ({ email, password, name }: CreateUserParams) =>
         // Generate avatar URL
         const avatarUrl = avatars.getInitialsURL(name);
 
+        // Handle company creation/lookup based on role
+        let finalCompanyId: string;
+        
+        if (isManager) {
+            // For managers: create a new company
+            if (!companyName) {
+                throw new Error('Company name is required for managers');
+            }
+            const companyDocument = await createCompany(companyName, newAccount.$id);
+            finalCompanyId = companyDocument.$id;
+            console.log('Company created for manager:', finalCompanyId);
+        } else {
+            // For employees: use the provided company ID
+            if (!companyId) {
+                throw new Error('Company ID is required for employees');
+            }
+            finalCompanyId = companyId;
+            console.log('Using existing company ID for employee:', finalCompanyId);
+        }
+
         // Create user document in database
         console.log('Attempting to create user document in database...');
         console.log('Database ID:', appwriteConfig.databaseId);
         console.log('Collection ID:', appwriteConfig.userCollectionId);
+        console.log('isManager:', isManager);
+        console.log('companyId:', finalCompanyId);
         
         try {
             const userDocument = await databases.createDocument(
@@ -75,7 +130,9 @@ export const createUser = async ({ email, password, name }: CreateUserParams) =>
                     email, 
                     name, 
                     accountId: newAccount.$id, // Store account ID for lookup
-                    avatar: avatarUrl 
+                    avatar: avatarUrl,
+                    isManager: isManager,
+                    companyId: finalCompanyId
                 }
             );
 

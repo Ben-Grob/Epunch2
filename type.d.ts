@@ -20,6 +20,8 @@ export interface User extends Models.Document {
     name: string;
     email: string;
     avatar: string;
+    isManager: boolean;
+    companyId: string;
 }
 
 export interface CartCustomization {
@@ -90,10 +92,13 @@ interface ProfileFieldProps {
     icon: ImageSourcePropType;
 }
 
-interface CreateUserParams {
+export interface CreateUserParams {
     email: string;
     password: string;
     name: string;
+    isManager: boolean;
+    companyId?: string; // For employees - existing company ID
+    companyName?: string; // For managers - new company name
 }
 
 interface SignInParams {
