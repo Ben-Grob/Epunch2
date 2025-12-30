@@ -43,7 +43,7 @@ const SignIn = () => {
 }
 
 return (
-  <View className="gap-10 bg-white rounded-lg p-5 mt-5">
+  <View className="gap-10 bg-white rounded-lg p-5 mt-20">
     <Text className= "text-xl text-center mb-5 text-black">
           Sign Into Your Account 
     </Text>

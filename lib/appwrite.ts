@@ -1,6 +1,6 @@
 import { Account, Avatars, Client, Databases, ID, Query } from "react-native-appwrite";
 
-import { CreateUserParams, SignInParams } from "@/type";
+import { CreateUserParams, Shift, SignInParams } from "@/type";
 
 
 
@@ -240,5 +240,168 @@ export const signOut = async () => {
             console.error("Error deleting all sessions:", deleteError);
         }
         // Don't throw - allow logout to proceed even if there's an error
+    }
+}
+
+// Shift Functions
+export const getActiveShift = async (userId: string): Promise<Shift | null> => {
+    try {
+        console.log('Checking for active shift for user:', userId);
+        
+        const shifts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            [
+                Query.equal('user', userId),
+                Query.equal('isActive', true)
+            ]
+        );
+
+        if (shifts.total === 0) {
+            console.log('No active shift found');
+            return null;
+        }
+
+        console.log('Active shift found:', shifts.documents[0].$id);
+        return shifts.documents[0] as unknown as Shift;
+    } catch (e: any) {
+        console.error('Error getting active shift:', e?.message || e);
+        throw new Error(`Failed to get active shift: ${e?.message || e}`);
+    }
+}
+
+export const punchIn = async (userId: string): Promise<Shift> => {
+    try {
+        console.log('Punching in for user:', userId);
+        
+        // Check if there's already an active shift
+        const activeShift = await getActiveShift(userId);
+        if (activeShift) {
+            throw new Error('You already have an active shift. Please punch out first.');
+        }
+
+        const timeIn = new Date().toISOString();
+        
+        const shift = await databases.createDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            ID.unique(),
+            {
+                timeIn,
+                isActive: true,
+                user: userId
+            }
+        );
+
+        console.log('Punched in successfully:', shift.$id);
+        return shift as unknown as Shift;
+    } catch (e: any) {
+        console.error('Error punching in:', e?.message || e);
+        throw new Error(`Failed to punch in: ${e?.message || e}`);
+    }
+}
+
+export const punchOut = async (userId: string): Promise<Shift> => {
+    try {
+        console.log('Punching out for user:', userId);
+        
+        const activeShift = await getActiveShift(userId);
+        if (!activeShift) {
+            throw new Error('No active shift found. Please punch in first.');
+        }
+
+        const timeOut = new Date().toISOString();
+        
+        const updatedShift = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            activeShift.$id,
+            {
+                timeOut,
+                isActive: false
+            }
+        );
+
+        console.log('Punched out successfully:', updatedShift.$id);
+        return updatedShift as unknown as Shift;
+    } catch (e: any) {
+        console.error('Error punching out:', e?.message || e);
+        throw new Error(`Failed to punch out: ${e?.message || e}`);
+    }
+}
+
+export const getShiftHistory = async (userId: string): Promise<Shift[]> => {
+    try {
+        console.log('Fetching shift history for user:', userId);
+        
+        const shifts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            [
+                Query.equal('user', userId),
+                Query.equal('isActive', false),
+                Query.orderDesc('timeIn')
+            ]
+        );
+
+        console.log(`Found ${shifts.total} completed shifts`);
+        return shifts.documents as unknown as Shift[];
+    } catch (e: any) {
+        console.error('Error getting shift history:', e?.message || e);
+        throw new Error(`Failed to get shift history: ${e?.message || e}`);
+    }
+}
+
+export const createManualShift = async (
+    userId: string, 
+    timeIn: string, 
+    timeOut?: string
+): Promise<Shift> => {
+    try {
+        console.log('Creating manual shift for user:', userId);
+        
+        const shift = await databases.createDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            ID.unique(),
+            {
+                timeIn,
+                timeOut: timeOut || undefined,
+                isActive: !timeOut // Active if no timeOut provided
+            }
+        );
+
+        console.log('Manual shift created successfully:', shift.$id);
+        return shift as unknown as Shift;
+    } catch (e: any) {
+        console.error('Error creating manual shift:', e?.message || e);
+        throw new Error(`Failed to create manual shift: ${e?.message || e}`);
+    }
+}
+
+export const updateShift = async (
+    shiftId: string,
+    timeIn: string,
+    timeOut?: string
+): Promise<Shift> => {
+    try {
+        console.log('Updating shift:', shiftId);
+        
+        const updatedShift = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            shiftId,
+            {
+                timeIn,
+                timeOut: timeOut || undefined,
+                isActive: !timeOut // Active if no timeOut provided
+            }
+        );
+
+        console.log('Shift updated successfully:', updatedShift.$id);
+        return updatedShift as unknown as Shift;
+    } catch (e: any) {
+        console.error('Error updating shift:', e?.message || e);
+        throw new Error(`Failed to update shift: ${e?.message || e}`);
     }
 }
