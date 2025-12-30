@@ -24,6 +24,13 @@ export interface User extends Models.Document {
     companyId: string;
 }
 
+export interface Shift extends Models.Document {
+    timeIn: string; // ISO string
+    timeOut?: string; // ISO string, optional
+    isActive: boolean;
+    user: string; // Relationship to User $id
+}
+
 export interface CartCustomization {
     id: string;
     name: string;
