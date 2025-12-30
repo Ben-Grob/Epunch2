@@ -4,9 +4,11 @@ import { Shift } from "@/type";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Modal, Platform, ScrollView, Text, TouchableOpacity, View, Appearance, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../globals.css";
+
+Appearance.setColorScheme("light")
 
 // Helper function to format date
 const formatDate = (dateString: string): string => {
