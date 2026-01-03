@@ -1,6 +1,6 @@
 import { Account, Avatars, Client, Databases, ID, Query } from "react-native-appwrite";
 
-import { CreateUserParams, Shift, SignInParams } from "@/type";
+import { Company, CreateUserParams, Shift, SignInParams, User } from "@/type";
 
 
 
@@ -403,5 +403,141 @@ export const updateShift = async (
     } catch (e: any) {
         console.error('Error updating shift:', e?.message || e);
         throw new Error(`Failed to update shift: ${e?.message || e}`);
+    }
+}
+
+// Company Functions
+export const getCompany = async (companyId: string): Promise<Company | null> => {
+    try {
+        console.log('Fetching company:', companyId);
+        
+        const company = await databases.getDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.companyCollectionId,
+            companyId
+        );
+
+        console.log('Company fetched successfully');
+        return company as unknown as Company;
+    } catch (e: any) {
+        console.error('Error getting company:', e?.message || e);
+        return null;
+    }
+}
+
+// Get shifts for a specific week range
+export const getShiftsForWeek = async (
+    userId: string,
+    startOfWeek: string,
+    endOfWeek: string
+): Promise<Shift[]> => {
+    try {
+        console.log('Fetching shifts for week range:', startOfWeek, 'to', endOfWeek);
+        
+        const shifts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.shiftCollectionId,
+            [
+                Query.equal('user', userId),
+                Query.greaterThanEqual('timeIn', startOfWeek),
+                Query.lessThanEqual('timeIn', endOfWeek)
+            ]
+        );
+
+        console.log(`Found ${shifts.total} shifts in week range`);
+        return shifts.documents as unknown as Shift[];
+    } catch (e: any) {
+        console.error('Error getting shifts for week:', e?.message || e);
+        throw new Error(`Failed to get shifts for week: ${e?.message || e}`);
+    }
+}
+
+// Manager Functions
+// Get all users in a company
+export const getCompanyUsers = async (companyId: string): Promise<User[]> => {
+    try {
+        console.log('Fetching users for company:', companyId);
+        
+        const users = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            [Query.equal('companyId', companyId)]
+        );
+
+        console.log(`Found ${users.total} users in company`);
+        return users.documents as unknown as User[];
+    } catch (e: any) {
+        console.error('Error getting company users:', e?.message || e);
+        throw new Error(`Failed to get company users: ${e?.message || e}`);
+    }
+}
+
+// Get all shifts for multiple users in a week range
+export const getShiftsForUsersInWeek = async (
+    userIds: string[],
+    startOfWeek: string,
+    endOfWeek: string
+): Promise<Shift[]> => {
+    try {
+        console.log('Fetching shifts for', userIds.length, 'users in week range');
+        
+        // Fetch shifts for all users - we'll filter in the frontend
+        // Appwrite doesn't support Query.item() easily, so we fetch all and filter
+        const allShifts: Shift[] = [];
+        
+        // Fetch shifts for each user
+        for (const userId of userIds) {
+            try {
+                const shifts = await databases.listDocuments(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.shiftCollectionId,
+                    [
+                        Query.equal('user', userId),
+                        Query.greaterThanEqual('timeIn', startOfWeek),
+                        Query.lessThanEqual('timeIn', endOfWeek)
+                    ]
+                );
+                allShifts.push(...(shifts.documents as unknown as Shift[]));
+            } catch (e) {
+                console.error(`Error fetching shifts for user ${userId}:`, e);
+            }
+        }
+
+        console.log(`Found ${allShifts.length} total shifts for all users`);
+        return allShifts;
+    } catch (e: any) {
+        console.error('Error getting shifts for users:', e?.message || e);
+        throw new Error(`Failed to get shifts for users: ${e?.message || e}`);
+    }
+}
+
+// Get active shifts for multiple users
+export const getActiveShiftsForUsers = async (userIds: string[]): Promise<Shift[]> => {
+    try {
+        console.log('Fetching active shifts for', userIds.length, 'users');
+        
+        const allActiveShifts: Shift[] = [];
+        
+        for (const userId of userIds) {
+            try {
+                const shifts = await databases.listDocuments(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.shiftCollectionId,
+                    [
+                        Query.equal('user', userId),
+                        Query.equal('isActive', true)
+                    ]
+                );
+                allActiveShifts.push(...(shifts.documents as unknown as Shift[]));
+            } catch (e) {
+                console.error(`Error fetching active shifts for user ${userId}:`, e);
+            }
+        }
+
+        console.log(`Found ${allActiveShifts.length} active shifts`);
+        return allActiveShifts;
+    } catch (e: any) {
+        console.error('Error getting active shifts:', e?.message || e);
+        throw new Error(`Failed to get active shifts: ${e?.message || e}`);
     }
 }

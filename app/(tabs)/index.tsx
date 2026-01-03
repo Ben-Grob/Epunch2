@@ -1,14 +1,65 @@
-import { createManualShift, getActiveShift, getShiftHistory, punchIn, punchOut, updateShift } from "@/lib/appwrite";
+import { createManualShift, getActiveShift, getCompany, getShiftsForWeek, punchIn, punchOut, updateShift } from "@/lib/appwrite";
 import useAuthStore from "@/store/auth.store";
 import { Shift } from "@/type";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Modal, Platform, ScrollView, Text, TouchableOpacity, View, Appearance, useColorScheme } from "react-native";
+import { Alert, Appearance, FlatList, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "../globals.css";
 
 Appearance.setColorScheme("light")
+
+// Helper function to map day name to index
+const getDayIndex = (dayName: string): number => {
+  const dayMap: { [key: string]: number } = {
+    'sunday': 0,
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6
+  };
+  return dayMap[dayName.toLowerCase()] ?? 0; // Default to Sunday if not found
+};
+
+// Calculate start of week based on startDay
+const getStartOfWeek = (date: Date, startDay: string): Date => {
+  const dayIndex = getDayIndex(startDay);
+  const currentDay = date.getDay();
+  
+  // Calculate days to subtract to get to the most recent occurrence of start day
+  let daysToSubtract = (currentDay - dayIndex + 7) % 7;
+  
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - daysToSubtract);
+  startOfWeek.setHours(0, 0, 0, 0);
+  return startOfWeek;
+};
+
+// Calculate end of week (6 days, 23 hours, 59 minutes after start)
+const getEndOfWeek = (startOfWeek: Date): Date => {
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+  return endOfWeek;
+};
+
+// Format week range for display
+const formatWeekRange = (startOfWeek: Date, endOfWeek: Date): string => {
+  const startStr = startOfWeek.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  const endStr = endOfWeek.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  return `${startStr} - ${endStr}`;
+};
 
 // Helper function to format date
 const formatDate = (dateString: string): string => {
@@ -42,6 +93,21 @@ const calculateDuration = (timeIn: string, timeOut?: string): string => {
   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   
   return `${diffHours}h ${diffMinutes}m`;
+};
+
+// Calculate duration in minutes
+const calculateDurationMinutes = (timeIn: string, timeOut?: string, currentTime?: Date): number => {
+  const start = new Date(timeIn);
+  const end = timeOut ? new Date(timeOut) : (currentTime || new Date());
+  const diffMs = end.getTime() - start.getTime();
+  return Math.floor(diffMs / (1000 * 60));
+};
+
+// Format total minutes as hours and minutes
+const formatTotalHours = (totalMinutes: number): string => {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m`;
 };
 
 interface ShiftEditModalProps {
@@ -212,23 +278,66 @@ const ShiftEditModal = ({ visible, shift, onClose, onSave }: ShiftEditModalProps
 export default function Index() {
   const { user } = useAuthStore();
   const [activeShift, setActiveShift] = useState<Shift | null>(null);
-  const [shiftHistory, setShiftHistory] = useState<Shift[]>([]);
+  const [weeklyShifts, setWeeklyShifts] = useState<Shift[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPunching, setIsPunching] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [startDay, setStartDay] = useState<string>('Sunday');
+  const [weeklyTotal, setWeeklyTotal] = useState(0);
+
+  // Calculate week range based on selectedDate and startDay
+  const startOfWeek = getStartOfWeek(selectedDate, startDay);
+  const endOfWeek = getEndOfWeek(startOfWeek);
+
+  const loadCompanyData = async () => {
+    if (!user?.companyId) {
+      setStartDay('Sunday'); // Default
+      return;
+    }
+
+    try {
+      const company = await getCompany(user.companyId);
+      if (company?.startDay) {
+        setStartDay(company.startDay);
+      }
+    } catch (error: any) {
+      console.error('Error loading company:', error);
+      // Default to Sunday on error
+      setStartDay('Sunday');
+    }
+  };
 
   const loadShifts = async () => {
     if (!user?.$id) return;
 
     try {
       setIsLoading(true);
-      const [active, history] = await Promise.all([
-        getActiveShift(user.$id),
-        getShiftHistory(user.$id)
-      ]);
+      
+      // Get active shift
+      const active = await getActiveShift(user.$id);
       setActiveShift(active);
-      setShiftHistory(history);
+
+      // Get shifts for the week range
+      const startISO = startOfWeek.toISOString();
+      const endISO = endOfWeek.toISOString();
+      const shifts = await getShiftsForWeek(user.$id, startISO, endISO);
+      
+      // Sort by timeIn descending
+      shifts.sort((a, b) => new Date(b.timeIn).getTime() - new Date(a.timeIn).getTime());
+      setWeeklyShifts(shifts);
+
+      // Calculate weekly total
+      const now = new Date();
+      const totalMinutes = shifts.reduce((sum, shift) => {
+        return sum + calculateDurationMinutes(
+          shift.timeIn, 
+          shift.timeOut || undefined, 
+          shift.isActive ? now : undefined
+        );
+      }, 0);
+      setWeeklyTotal(totalMinutes);
     } catch (error: any) {
       console.error('Error loading shifts:', error);
       Alert.alert('Error', error.message || 'Failed to load shifts');
@@ -238,8 +347,14 @@ export default function Index() {
   };
 
   useEffect(() => {
-    loadShifts();
+    loadCompanyData();
   }, [user]);
+
+  useEffect(() => {
+    if (user?.$id) {
+      loadShifts();
+    }
+  }, [user, selectedDate, startDay]);
 
   const handlePunchIn = async () => {
     if (!user?.$id) return;
@@ -301,6 +416,22 @@ export default function Index() {
     }
   };
 
+  const handlePreviousWeek = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() - 7);
+    setSelectedDate(newDate);
+  };
+
+  const handleNextWeek = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(selectedDate.getDate() + 7);
+    setSelectedDate(newDate);
+  };
+
+  const handleToday = () => {
+    setSelectedDate(new Date());
+  };
+
   const renderShiftItem = ({ item }: { item: Shift }) => (
     <TouchableOpacity
       className="bg-white p-4 mb-3 rounded-xl border border-gray-200"
@@ -335,7 +466,46 @@ export default function Index() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Card */}
+        {/* Weekly Totals Card */}
+        <View className="mx-4 mt-4 p-5 rounded-2xl bg-white border-2 border-gray-200 shadow-sm">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-lg font-bold text-gray-900">Weekly Total</Text>
+            <Text className="text-2xl font-bold text-primary">{formatTotalHours(weeklyTotal)}</Text>
+          </View>
+          <Text className="text-sm text-gray-500">{formatWeekRange(startOfWeek, endOfWeek)}</Text>
+        </View>
+
+        {/* Week Switcher */}
+        <View className="mx-4 mt-4 bg-white rounded-xl p-4 border border-gray-200">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={handlePreviousWeek}
+              className="p-2 rounded-lg bg-gray-100"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-back" size={24} color="#6B7280" />
+            </TouchableOpacity>
+            
+            <View className="flex-1 items-center mx-4">
+              <Text className="text-base font-semibold text-gray-900 text-center">
+                {formatWeekRange(startOfWeek, endOfWeek)}
+              </Text>
+              <TouchableOpacity onPress={handleToday} className="mt-1">
+                <Text className="text-xs text-primary">Today</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <TouchableOpacity
+              onPress={handleNextWeek}
+              className="p-2 rounded-lg bg-gray-100"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-forward" size={24} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Status Card */}
         <View className={`mx-4 mt-4 p-5 rounded-2xl ${
           activeShift ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-100 border-2 border-gray-200'
         }`}>
@@ -411,21 +581,21 @@ export default function Index() {
           </TouchableOpacity>
         </View>
 
-        {/* Shift History */}
+        {/* Weekly Shifts */}
         <View className="mx-4 mt-6 mb-4">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Shift History</Text>
+          <Text className="text-xl font-bold text-gray-900 mb-4">This Week's Shifts</Text>
           {isLoading ? (
             <View className="py-8 items-center">
               <Text className="text-gray-500">Loading shifts...</Text>
             </View>
-          ) : shiftHistory.length === 0 ? (
+          ) : weeklyShifts.length === 0 ? (
             <View className="py-8 items-center bg-white rounded-xl">
               <Ionicons name="calendar-outline" size={48} color="#D1D5DB" />
-              <Text className="text-gray-500 mt-2">No shift history yet</Text>
+              <Text className="text-gray-500 mt-2">No shifts this week</Text>
             </View>
           ) : (
             <FlatList
-              data={shiftHistory}
+              data={weeklyShifts}
               renderItem={renderShiftItem}
               keyExtractor={(item) => item.$id}
               scrollEnabled={false}

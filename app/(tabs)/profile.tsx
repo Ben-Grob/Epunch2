@@ -37,6 +37,13 @@ export default function Profile() {
   };
 
   const profileOptions: ProfileOption[] = [
+    ...(user?.isManager ? [{
+      icon: "briefcase-outline" as keyof typeof Ionicons.glyphMap,
+      label: "Manager Dashboard",
+      onPress: () => {
+        router.push('/(manager)/dashboard');
+      }
+    }] : []),
     {
       icon: "person-outline",
       label: "Edit Profile",

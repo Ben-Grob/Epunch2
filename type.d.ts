@@ -16,6 +16,12 @@ export interface Category extends Models.Document {
     description: string;
 }
 
+export interface Company extends Models.Document {
+    name: string;
+    managerId: string;
+    startDay?: string; // e.g., "Sunday", "Monday", etc.
+}
+
 export interface User extends Models.Document {
     name: string;
     email: string;
