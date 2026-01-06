@@ -134,7 +134,7 @@ export default function Profile() {
               activeOpacity={0.7}
             >
               <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${
-                option.danger ? 'bg-red-50' : 'bg-gray-100'
+                option.danger ? 'bg-red-50' : 'bg-gray-0'
               }`}>
                 <Ionicons 
                   name={option.icon} 

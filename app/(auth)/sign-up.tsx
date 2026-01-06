@@ -1,6 +1,6 @@
 import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
-import { createUser } from "@/lib/appwrite";
+import { assignRoleLabel, createUser } from "@/lib/appwrite";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, router } from "expo-router";
 import { useState } from "react";
@@ -39,7 +39,7 @@ const SignUp = () => {
         setIsSubmitting(true);
 
         try {
-            await createUser({ 
+            const newUser = await createUser({ 
                 email, 
                 password, 
                 name,
@@ -47,6 +47,17 @@ const SignUp = () => {
                 companyId: role === 'employee' ? companyId : undefined,
                 companyName: role === 'manager' ? companyName : undefined
             });
+
+            // Assign manager label if user is a manager
+            if (role === 'manager' && newUser?.accountId) {
+                try {
+                    await assignRoleLabel(newUser.accountId, 'manager');
+                    console.log('Manager label assignment initiated');
+                } catch (labelError: any) {
+                    console.error('Error assigning manager label:', labelError);
+                    // Don't block signup if label assignment fails
+                }
+            }
 
             router.replace('/(tabs)');
         } catch(error: any) {

@@ -1,4 +1,4 @@
-import { Account, Avatars, Client, Databases, ID, Query } from "react-native-appwrite";
+import { Account, Avatars, Client, Databases, Functions, ID, Query } from "react-native-appwrite";
 
 import { Company, CreateUserParams, Shift, SignInParams, User } from "@/type";
 
@@ -11,7 +11,8 @@ export const appwriteConfig = {
     databaseId: "68be4356003720c7181c",
     userCollectionId: "user",
     companyCollectionId: "company",
-    shiftCollectionId: "shift"
+    shiftCollectionId: "shift",
+    assignRoleFunctionId: "assign-role-function" // Cloud Function ID for assigning labels
 }
 
 export const client = new Client();
@@ -23,6 +24,7 @@ client
 
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const functions = new Functions(client);
 const avatars = new Avatars(client);
 
 // Create a new company
@@ -539,5 +541,29 @@ export const getActiveShiftsForUsers = async (userIds: string[]): Promise<Shift[
     } catch (e: any) {
         console.error('Error getting active shifts:', e?.message || e);
         throw new Error(`Failed to get active shifts: ${e?.message || e}`);
+    }
+}
+
+// Assign role label to user via Cloud Function
+export const assignRoleLabel = async (userId: string, role: string): Promise<void> => {
+    try {
+        console.log(`Assigning ${role} label to user:`, userId);
+        
+        const execution = await functions.createExecution(
+            appwriteConfig.assignRoleFunctionId,
+            JSON.stringify({
+                userId: userId,
+                role: role
+            })
+        );
+
+        console.log('Role label assignment execution created:', execution.$id);
+        
+        // Note: The function execution is async, so we don't wait for completion
+        // The cloud function will handle the label assignment
+    } catch (e: any) {
+        console.error('Error assigning role label:', e?.message || e);
+        // Don't throw - label assignment failure shouldn't block signup
+        // The user can still proceed, and labels can be assigned manually if needed
     }
 }

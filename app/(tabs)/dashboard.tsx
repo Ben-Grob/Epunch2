@@ -213,7 +213,7 @@ export default function ManagerDashboard() {
 
   const renderEmployeeItem = ({ item }: { item: EmployeeData }) => (
     <TouchableOpacity
-      className="bg-white p-4 mb-3 rounded-xl border border-gray-200"
+      className="bg-white p-4 mb-3 rounded-xl border border-gray-100"
       onPress={() => handleEmployeePress(item.user.$id)}
       activeOpacity={0.7}
     >
@@ -228,7 +228,7 @@ export default function ManagerDashboard() {
         </View>
         <View className="flex-row items-center">
           <View className={`px-3 py-1 rounded-full ${
-            item.isActive ? 'bg-green-100' : 'bg-gray-100'
+            item.isActive ? 'bg-green-100' : 'bg-gray-300'
           }`}>
             <Text className={`text-xs font-semibold ${
               item.isActive ? 'text-green-700' : 'text-gray-600'
@@ -260,7 +260,7 @@ export default function ManagerDashboard() {
           <View className="flex-row items-center justify-between">
             <TouchableOpacity
               onPress={handlePreviousWeek}
-              className="p-2 rounded-lg bg-gray-100"
+              className="p-2 rounded-lg bg-gray-300"
               activeOpacity={0.7}
             >
               <Ionicons name="chevron-back" size={24} color="#6B7280" />
@@ -277,7 +277,7 @@ export default function ManagerDashboard() {
             
             <TouchableOpacity
               onPress={handleNextWeek}
-              className="p-2 rounded-lg bg-gray-100"
+              className="p-2 rounded-lg bg-gray-300"
               activeOpacity={0.7}
             >
               <Ionicons name="chevron-forward" size={24} color="#6B7280" />

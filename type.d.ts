@@ -28,6 +28,7 @@ export interface User extends Models.Document {
     avatar: string;
     isManager: boolean;
     companyId: string;
+    accountId: string; // Appwrite account ID for label assignment
 }
 
 export interface Shift extends Models.Document {

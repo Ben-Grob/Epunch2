@@ -480,7 +480,7 @@ export default function Index() {
           <View className="flex-row items-center justify-between">
             <TouchableOpacity
               onPress={handlePreviousWeek}
-              className="p-2 rounded-lg bg-gray-100"
+              className="p-2 rounded-lg bg-gray-300"
               activeOpacity={0.7}
             >
               <Ionicons name="chevron-back" size={24} color="#6B7280" />
@@ -497,7 +497,7 @@ export default function Index() {
             
             <TouchableOpacity
               onPress={handleNextWeek}
-              className="p-2 rounded-lg bg-gray-100"
+              className="p-2 rounded-lg bg-gray-300"
               activeOpacity={0.7}
             >
               <Ionicons name="chevron-forward" size={24} color="#6B7280" />
@@ -507,7 +507,7 @@ export default function Index() {
 
         {/* Status Card */}
         <View className={`mx-4 mt-4 p-5 rounded-2xl ${
-          activeShift ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-100 border-2 border-gray-200'
+          activeShift ? 'bg-green-50 border-2 border-green-200' : 'bg-white border-2 border-gray-100'
         }`}>
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
